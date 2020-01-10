@@ -1,0 +1,2 @@
+include ':app', ':aboutdragger', ':studygbs'
+rootProject.name='AboutJetpack'
