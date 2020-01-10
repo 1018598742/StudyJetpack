@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.fta.studygbs.AppExecutors
 import com.fta.studygbs.R
+import com.fta.studygbs.di.FragmentBuildersModule_ContributeSearchFragment
 import com.fta.studygbs.di.Injectable
 import com.fta.studygbs.ui.common.RepoListAdapter
 import dagger.android.AndroidInjection
@@ -41,7 +42,7 @@ class SearchFragment : Fragment(), Injectable {
         super.onViewCreated(view, savedInstanceState)
         initRecyclerView()
         adapter = RepoListAdapter(appExecutors){
-//            navController().navigate()
+
         }
         repo_list.adapter = adapter
 
