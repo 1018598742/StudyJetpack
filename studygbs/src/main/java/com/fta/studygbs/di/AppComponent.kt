@@ -1,8 +1,7 @@
-package com.fta.aboutdragger.component
+package com.fta.studygbs.di
 
 import android.app.Application
 import com.fta.studygbs.MyApplication
-import com.fta.studygbs.di.MainActivityModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjectionModule
@@ -11,6 +10,7 @@ import javax.inject.Singleton
 @Singleton
 @Component(
     modules = [AndroidInjectionModule::class,
+        AppModule::class,
         MainActivityModule::class]
 )
 interface AppComponent {
