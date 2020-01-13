@@ -25,6 +25,9 @@ class SearchViewModel @Inject constructor(repoRepository: RepoRepository) : View
         }
     }
 
+    val loadMoreStatus: LiveData<LoadMoreState>
+        get() = nextPageHandler.loadMoreState
+
     fun setQuery(originalInput: String) {
         val input = originalInput.toLowerCase(Locale.getDefault()).trim()
         if (input == _query.value) {
@@ -50,6 +53,16 @@ class SearchViewModel @Inject constructor(repoRepository: RepoRepository) : View
     }
 
     class LoadMoreState(val isRunning: Boolean, val errorMessage: String?) {
+        private var handledError = false
+
+        val errorMessageIfNotHandled: String?
+            get() {
+                if (handledError) {
+                    return null
+                }
+                handledError = true
+                return errorMessage
+            }
 
     }
 
@@ -70,7 +83,7 @@ class SearchViewModel @Inject constructor(repoRepository: RepoRepository) : View
             reset()
         }
 
-        fun queryNextPage(query:String){
+        fun queryNextPage(query: String) {
             if (this.query == query) {
                 return
             }

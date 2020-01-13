@@ -21,9 +21,10 @@ import com.fta.studygbs.R
 import com.fta.studygbs.di.Injectable
 import com.fta.studygbs.ui.common.RepoListAdapter
 import com.fta.studygbs.util.autoCleared
+import com.fta.studygbs.vo.Status
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.loading_state.*
 import kotlinx.android.synthetic.main.search_fragment.*
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class SearchFragment : Fragment(), Injectable {
@@ -54,6 +55,12 @@ class SearchFragment : Fragment(), Injectable {
         adapter = RepoListAdapter(appExecutors) { repo ->
             navController().navigate(SearchFragmentDirections.showRepo(repo.owner.login, repo.name))
         }
+
+        searchViewModel.query.observe(viewLifecycleOwner, Observer {
+            no_results_text.setText(String.format(getString(R.string.empty_search_result), it))
+        })
+
+
         repo_list.adapter = adapter
 
         initSearchInputListener()
@@ -76,12 +83,11 @@ class SearchFragment : Fragment(), Injectable {
         }
 
         input.setOnKeyListener { view, keyCode, event ->
-            when (event.action) {
-                KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER -> {
-                    doSearch(view)
-                    true
-                }
-                else -> false
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                doSearch(view)
+                true
+            } else {
+                false
             }
         }
     }
@@ -110,7 +116,33 @@ class SearchFragment : Fragment(), Injectable {
         })
 
         searchViewModel.results.observe(viewLifecycleOwner, Observer { result ->
+            val data = result.data
+            loading_state_root.visibility = if (data == null) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
+            val status = result.status
+            progress_bar.visibility = if (status == Status.LOADING) View.VISIBLE else View.GONE
+            retry.visibility = if (status == Status.ERROR) View.VISIBLE else View.GONE
+            error_msg.visibility = if (status == Status.ERROR) View.VISIBLE else View.GONE
+            error_msg.text = result.message ?: getString(R.string.unknown_error)
+            no_results_text.visibility =
+                if (status == Status.SUCCESS && data?.size == 0) View.VISIBLE else View.GONE
             adapter.submitList(result?.data)
+        })
+
+        searchViewModel.loadMoreStatus.observe(viewLifecycleOwner, Observer { loadingMore ->
+            if (loadingMore == null) {
+                load_more_bar.visibility = View.GONE
+            } else {
+                load_more_bar.visibility = if (loadingMore.isRunning) View.VISIBLE else View.GONE
+                val error = loadingMore.errorMessageIfNotHandled
+                if (error != null) {
+                    Snackbar.make(load_more_bar, error, Snackbar.LENGTH_LONG).show()
+                }
+            }
         })
     }
 
